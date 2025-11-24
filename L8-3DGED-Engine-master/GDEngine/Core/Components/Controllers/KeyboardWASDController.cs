@@ -20,7 +20,6 @@ namespace GDEngine.Core.Components
         private Keys _backward = Keys.S;
         private Keys _left = Keys.A;
         private Keys _right = Keys.D;
-        private Keys _boost = Keys.LeftShift;
         #endregion
 
         #region Properties
@@ -40,7 +39,6 @@ namespace GDEngine.Core.Components
         public Keys BackwardKey { get => _backward; set => _backward = value; }
         public Keys LeftKey { get => _left; set => _left = value; }
         public Keys RightKey { get => _right; set => _right = value; }
-        public Keys BoostKey { get => _boost; set => _boost = value; }
         #endregion
 
         #region Constructors
@@ -76,8 +74,6 @@ namespace GDEngine.Core.Components
             var kb = Keyboard.GetState();
 
             float speed = _moveSpeed;
-            if (kb.IsKeyDown(_boost))
-                speed *= _boostMultiplier;
 
             Vector3 dir = Vector3.Zero;
 
@@ -106,52 +102,3 @@ namespace GDEngine.Core.Components
         #endregion
     }
 }
-
-/*
-using GDEngine.Core.Timing;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-
-namespace GDEngine.Core.Components
-{
-   
-    public class KeyboardWASDController : Component
-    {
-        private KeyboardState _newKBState;
-
-        protected override void Update(float deltaTime)
-        {
-            //get kb state
-            _newKBState = Keyboard.GetState();
-            Vector3 dir = Vector3.Zero;
-            //read some keys
-            if (_newKBState.IsKeyDown(Keys.W))
-                dir += Transform.Forward;
-            else if (_newKBState.IsKeyDown(Keys.S))
-                dir -= Transform.Forward;
-
-            if (_newKBState.IsKeyDown(Keys.A))
-                dir += Transform.Right;
-            else if (_newKBState.IsKeyDown(Keys.D))
-                dir -= Transform.Right;
-            //test if not zero
-            if (dir.LengthSquared() > 0)
-                HandleMove(dir);
-        }
-        
-        private void HandleMove(Vector3 direction)
-        {
-            //make direction length = 1
-            direction.Normalize();
-
-            //scale by elapsed time (and speed later)
-            direction *= Time.DeltaTime * 20;
-
-            //apply delta vector
-            Transform.TranslateBy(direction, true);
-        }
-
-        //TODO - support speed, boost key, key re-mapping
-    }
-}
-    */

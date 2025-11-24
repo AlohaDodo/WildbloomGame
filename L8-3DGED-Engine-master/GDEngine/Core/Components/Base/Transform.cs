@@ -376,6 +376,11 @@ namespace GDEngine.Core.Components
             for (int i = 0; i < _children.Count; i++)
                 _children[i].MarkWorldDirty(reason | ChangeFlags.FromParent);
         }
+
+        public void RotateEuler(Vector3 vector3)
+        {
+            throw new NotImplementedException();
+        }
         #endregion
 
         #region Lifecycle Methods

@@ -559,6 +559,11 @@ namespace GDEngine.Core.Entities
             return $"Scene(Name={Name}, GameObjects={_gameObjects.Count}, Systems={_systemsAll.Count})";
         }
 
+        public void AddGameObject(GameObject grassQuadGO)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
     }
 }

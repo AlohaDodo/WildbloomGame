@@ -10,7 +10,6 @@ using GDEngine.Core.Events.Types.Camera;
 using GDEngine.Core.Factories;
 using GDEngine.Core.Input.Data;
 using GDEngine.Core.Input.Devices;
-using GDEngine.Core.Orchestration;
 using GDEngine.Core.Rendering;
 using GDEngine.Core.Rendering.Base;
 using GDEngine.Core.Serialization;
@@ -18,7 +17,6 @@ using GDEngine.Core.Services;
 using GDEngine.Core.Systems;
 using GDEngine.Core.Timing;
 using GDEngine.Core.Utilities;
-using GDGame.Demos.Controllers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
@@ -42,19 +40,6 @@ namespace GDGame
         private Material _matBasicUnlit, _matBasicLit, _matAlphaCutout, _matBasicUnlitGround;
         #endregion
 
-        #region Demo Fields (remove in the game)
-        private AnimationCurve3D _animationPositionCurve, _animationRotationCurve;
-        private AnimationCurve _animationCurve;
-        private KeyboardState _newKBState, _oldKBState;
-        private int _damageAmount;
-
-        // Simple debug subscription for collision events
-        private System.IDisposable _collisionSubscription;
-
-        // LayerMask used to filter which collisions we care about in debug
-        private LayerMask _collisionDebugMask = LayerMask.All;
-        #endregion
-
         #region Core Methods (Common to all games)     
         public Main()
         {
@@ -69,7 +54,7 @@ namespace GDGame
             #region Core
 
             // Give the game a name
-            Window.Title = "My Amazing Game";
+            Window.Title = "Wildbloom";
 
             // Set resolution and centering (by monitor index)
             InitializeGraphics(ScreenResolution.R_HD_16_9_1280x720);
@@ -103,32 +88,7 @@ namespace GDGame
             int scale = 100;
             InitializeSkyParent();
             InitializeSkyBox(scale);
-            DemoCollidableGround(scale);
-
-            // Setup player
-            InitializePlayer();
-
-            #region Demos
-
-            // Camera-demos
-            InitializeAnimationCurves();
-
-            // Demo event listeners on collision
-            InitializeCollisionEventListener();
-
-            // Collidable game object demos
-            DemoCollidablePrimitive(new Vector3(0, 20, 5.1f), Vector3.One * 6, new Vector3(15,45,45));
-            DemoCollidablePrimitive(new Vector3(0, 10, 5.2f), Vector3.One * 1, new Vector3(45, 0, 0));
-            DemoCollidablePrimitive(new Vector3(0, 5, 5.3f), Vector3.One * 1, new Vector3(0, 0, 45));
-            DemoCollidableModel(new Vector3(0, 50, 10), Vector3.Zero, new Vector3(2, 1.25f, 2));
-            DemoCollidableModel(new Vector3(0, 40, 11), Vector3.Zero, new Vector3(2, 1.25f, 2));
-            DemoCollidableModel(new Vector3(0, 25, 12), Vector3.Zero, new Vector3(2, 1.25f, 2));
-
-            DemoAlphaCutoutFoliage(new Vector3(0, 10 /*note Y=heightscale/2*/, 0), 12, 20);
-            DemoLoadFromJSON();
-            DemoOrchestrationSystem();
-            #endregion
-
+            
             // Setup renderers after all game objects added since ui text may use a gameobject as target
             InitializeUI();
 
@@ -147,69 +107,6 @@ namespace GDGame
             _scene.Add(go);
         }
 
-        private void InitializePlayer()
-        {
-            GameObject player = InitializeModel(new Vector3(0, 5, 10),
-                new Vector3(0, 0, 0),
-                2 * Vector3.One, "crate1", "monkey1", AppData.PLAYER_NAME);
-
-            var simpleDriveController = new SimpleDriveController();
-            player.AddComponent(simpleDriveController);
-
-            // Listen for damage events on the player
-            player.AddComponent<DamageEventListener>();
-
-            // Adds an inventory to the player
-            player.AddComponent<InventoryComponent>();
-        }
-        private void InitializePIPCamera(Vector3 position,
-      Viewport viewport, int depth, int index = 0)
-        {
-            var pipCameraGO = new GameObject("PIP camera");
-            pipCameraGO.Transform.TranslateTo(position);
-            pipCameraGO.Transform.RotateEulerBy(new Vector3(0, MathHelper.ToRadians(-90), 0));
-
-            //if (index == 0)
-            //{
-            //    pipCameraGO.AddComponent<KeyboardWASDController>();
-            //    pipCameraGO.AddComponent<MouseYawPitchController>();
-            //}
-
-            var camera = pipCameraGO.AddComponent<Camera>();
-            camera.StackRole = Camera.StackType.Overlay;
-            camera.ClearFlags = Camera.ClearFlagsType.DepthOnly;
-            camera.Depth = depth; //-100
-
-            camera.Viewport = viewport; // new Viewport(0, 0, 400, 300);
-
-            _scene.Add(pipCameraGO);
-        }
-
-        private void InitializeAnimationCurves()
-        {
-            //1D animation curve demo (e.g. scale, audio volume, lerp factor for color, etc)
-            _animationCurve = new AnimationCurve(CurveLoopType.Cycle);
-            _animationCurve.AddKey(0f, 10);
-            _animationCurve.AddKey(2f, 11); //up
-            _animationCurve.AddKey(0f, 12); //down
-            _animationCurve.AddKey(8f, 13); //up further
-            _animationCurve.AddKey(0f, 13.5f); //down
-
-            //3D animation curve demo
-            _animationPositionCurve = new AnimationCurve3D(CurveLoopType.Oscillate);
-            _animationPositionCurve.AddKey(new Vector3(0, 4, 0), 0);
-            _animationPositionCurve.AddKey(new Vector3(5, 8, 2), 1);
-            _animationPositionCurve.AddKey(new Vector3(10, 12, 4), 2);
-            _animationPositionCurve.AddKey(new Vector3(0, 4, 0), 3);
-
-            // Absolute yaw/pitch/roll angles (radians) over time
-            _animationRotationCurve = new AnimationCurve3D(CurveLoopType.Oscillate);
-            _animationRotationCurve.AddKey(new Vector3(0, 0, 0), 0);              // yaw, pitch, roll
-            _animationRotationCurve.AddKey(new Vector3(0, MathHelper.PiOver2, 0), 1);
-            _animationRotationCurve.AddKey(new Vector3(0, MathHelper.Pi, 0), 2);
-            _animationRotationCurve.AddKey(new Vector3(0, 0, 0), 3);
-        }
-
         private void InitializeGraphics(Integer2 resolution)
         {
             // Enable per-monitor DPI awareness so the window/UI scales crisply on multi-monitor setups with different DPIs (avoids blurriness when moving between screens).
@@ -226,8 +123,7 @@ namespace GDGame
         {
             Mouse.SetPosition(_graphics.PreferredBackBufferWidth / 2, _graphics.PreferredBackBufferHeight / 2);
 
-            // Set old state at start so its not null for comparison with new state in Update
-            _oldKBState = Keyboard.GetState();
+            
         }
 
         private void InitializeContext()
@@ -333,52 +229,10 @@ namespace GDGame
             InitializeInputSystem();  //input
             InitializeCameraAndRenderSystems(); //update cameras, draw renderable game objects, draw ui and menu
             InitializeAudioSystem();
-            InitializeOrchestrationSystem(true); //show debugger
+            
         }
 
-        private void InitializeOrchestrationSystem(bool debugEnabled)
-        {
-            var orchestrationSystem = new OrchestrationSystem();
-            orchestrationSystem.Configure(options =>
-            {
-                options.Time = Orchestrator.OrchestrationTime.Unscaled;
-                options.LocalScale = 1;
-                options.Paused = false;
-            });
-            _scene.Add(orchestrationSystem);
-
-            // Debugger
-            if (debugEnabled)
-            {
-                GameObject debugGO = new GameObject("Perf Stats");
-                var debugRenderer = debugGO.AddComponent<UIDebugRenderer>();
-
-                debugRenderer.Font = _fontDictionary.Get("perf_stats_font");
-                debugRenderer.ScreenCorner = ScreenCorner.TopLeft;
-                debugRenderer.Margin = new Vector2(10f, 10f);
-
-                // Register orchestration as a debug provider
-                if (orchestrationSystem != null)
-                    debugRenderer.Providers.Add(orchestrationSystem);
-
-                var perfProvider = new PerformanceDebugInfoProvider
-                {
-                    Profile = DisplayProfile.Profiling,
-                    ShowMemoryStats = true
-                };
-
-                debugRenderer.Providers.Add(perfProvider);
-
-
-                _scene.Add(debugGO);
-            }
-
-
-
-
-
-
-        }
+        
 
         private void InitializeAudioSystem()
         {
@@ -449,35 +303,7 @@ namespace GDGame
         {
             GameObject cameraGO = null;
             Camera camera = null;
-            #region Static birds-eye camera
-            cameraGO = new GameObject(AppData.CAMERA_NAME_STATIC_BIRDS_EYE);
-            camera = cameraGO.AddComponent<Camera>();
-            camera.FieldOfView = MathHelper.ToRadians(80);
-            //ISRoT
-            cameraGO.Transform.RotateEulerBy(new Vector3(MathHelper.ToRadians(-90), 0, 0));
-            cameraGO.Transform.TranslateTo(Vector3.UnitY * 50);
-
-            // _cameraGO.AddComponent<MouseYawPitchController>();
-
-            _scene.Add(cameraGO);
-
-            // _camera.FieldOfView
-            //TODO - add camera
-            #endregion
-
-            #region Third-person camera
-            cameraGO = new GameObject(AppData.CAMERA_NAME_THIRD_PERSON);
-            camera = cameraGO.AddComponent<Camera>();
-
-            var thirdPersonController = new ThirdPersonController();
-            thirdPersonController.TargetName = AppData.PLAYER_NAME;
-            thirdPersonController.ShoulderOffset = 0;
-            thirdPersonController.FollowDistance = 50;
-            thirdPersonController.RotationDamping = 20;
-            cameraGO.AddComponent(thirdPersonController);
-            _scene.Add(cameraGO);
-            #endregion
-
+            
             #region First-person camera
             var position = new Vector3(0, 5, 25);
 
@@ -496,14 +322,8 @@ namespace GDGame
             // Add it to the scene
             _scene.Add(cameraGO);
             #endregion
-
-            // Set the active camera by finding and getting its camera component
-            // var theCamera = _scene.Find(go => go.Name.Equals(AppData.CAMERA_NAME_STATIC_BIRDS_EYE)).GetComponent<Camera>();
-            ////Obviously, since we have _camera we could also just use the line below
-            //_scene.SetActiveCamera(theCamera);
-
-            //replace with new SetActiveCamera that searches by string
-            _scene.SetActiveCamera(AppData.CAMERA_NAME_STATIC_BIRDS_EYE);
+            //DO NOT CHANGE - First-person is default active camera
+            _scene.SetActiveCamera(AppData.CAMERA_NAME_FIRST_PERSON);
         }
 
         /// <summary>
@@ -512,13 +332,6 @@ namespace GDGame
         private void InitializeSkyParent()
         {
             var _skyParent = new GameObject("SkyParent");
-            var rot = _skyParent.AddComponent<RotationController>();
-
-            // Turntable spin around local +Y
-            rot._rotationAxisNormalized = Vector3.Up;
-
-            // Dramatised fast drift at 2 deg/sec. 
-            rot._rotationSpeedInRadiansPerSecond = MathHelper.ToRadians(2f);
             _scene.Add(_skyParent);
         }
 
@@ -657,34 +470,7 @@ namespace GDGame
             IsMouseVisible = false;
         }
 
-        /// <summary>
-        /// Adds a single-part FBX model into the scene.
-        /// </summary>
-        private GameObject InitializeModel(Vector3 position,
-            Vector3 eulerRotationDegrees, Vector3 scale,
-            string textureName, string modelName, string objectName)
-        {
-            GameObject gameObject = null;
-
-            gameObject = new GameObject(objectName);
-            gameObject.Transform.TranslateTo(position);
-            gameObject.Transform.RotateEulerBy(eulerRotationDegrees * MathHelper.Pi / 180f);
-            gameObject.Transform.ScaleTo(scale);
-
-            var model = _modelDictionary.Get(modelName);
-            var texture = _textureDictionary.Get(textureName);
-            var meshFilter = MeshFilterFactory.CreateFromModel(model, _graphics.GraphicsDevice, 0, 0);
-            gameObject.AddComponent(meshFilter);
-
-            var meshRenderer = gameObject.AddComponent<MeshRenderer>();
-
-            meshRenderer.Material = _matBasicLit;
-            meshRenderer.Overrides.MainTexture = texture;
-
-            _scene.Add(gameObject);
-
-            return gameObject;
-        }
+        
         protected override void Update(GameTime gameTime)
         {
             //call time update
@@ -695,9 +481,7 @@ namespace GDGame
             _scene.Update(Time.DeltaTimeSecs);
             #endregion
 
-            #region Demo
-            DemoStuff();
-            #endregion
+            
 
             base.Update(gameTime);
         }
@@ -764,19 +548,6 @@ namespace GDGame
                 System.Diagnostics.Debug.WriteLine("Disposing EngineContext");
                 EngineContext.Instance?.Dispose();
 
-                // 6. Clear references to help GC
-                System.Diagnostics.Debug.WriteLine("Clearing References");
-                _animationCurve = null;
-                _animationPositionCurve = null;
-                _animationRotationCurve = null;
-
-                // 7. Dispose of collision handlers
-                if (_collisionSubscription != null)
-                {
-                    _collisionSubscription.Dispose();
-                    _collisionSubscription = null;
-                }
-
                 System.Diagnostics.Debug.WriteLine("Main disposal complete");
             }
 
@@ -787,322 +558,5 @@ namespace GDGame
         }
 
         #endregion    }
-
-        #region Demo Methods (remove in the game)
-        private void DemoCollidableGround(int scale = 500)
-        {
-            GameObject gameObject = null;
-            MeshFilter meshFilter = null;
-            MeshRenderer meshRenderer = null;
-
-            gameObject = new GameObject("ground");
-            meshFilter = MeshFilterFactory.CreateQuadTexturedLit(_graphics.GraphicsDevice);
-            meshFilter = MeshFilterFactory.CreateQuadGridTexturedUnlit(_graphics.GraphicsDevice,
-                 1,
-                 1,
-                 1,
-                 1,
-                 20,
-                 20);
-
-            gameObject.Transform.ScaleBy(new Vector3(scale, scale, 1));
-            gameObject.Transform.RotateEulerBy(new Vector3(MathHelper.ToRadians(-90), 0, 0), true);
-            gameObject.Transform.TranslateTo(new Vector3(0, -0.5f, 0));
-
-            gameObject.AddComponent(meshFilter);
-            meshRenderer = gameObject.AddComponent<MeshRenderer>();
-            meshRenderer.Material = _matBasicUnlitGround;
-            meshRenderer.Overrides.MainTexture = _textureDictionary.Get("ground_grass");
-
-            // Add a box collider matching the ground size
-            var collider = gameObject.AddComponent<BoxCollider>();
-            collider.Size = new Vector3(scale, scale, 0.025f);
-            collider.Center = new Vector3(0, 0, -0.0125f);
-
-            // Add rigidbody as Static (immovable)
-            var rigidBody = gameObject.AddComponent<RigidBody>();
-            rigidBody.BodyType = BodyType.Static;
-            gameObject.IsStatic = true;
-
-            _scene.Add(gameObject);
-        }
-
-        private void DemoCollidableModel(Vector3 position, Vector3 eulerRotationDegrees, Vector3 scale)
-        {
-            var go = new GameObject("test");
-            go.Transform.TranslateTo(position);
-            go.Transform.RotateEulerBy(eulerRotationDegrees * MathHelper.Pi / 180f);
-            go.Transform.ScaleTo(scale);
-
-            var model = _modelDictionary.Get("monkey1");
-            var texture = _textureDictionary.Get("mona lisa");
-            var meshFilter = MeshFilterFactory.CreateFromModel(model, _graphics.GraphicsDevice, 0, 0);
-            go.AddComponent(meshFilter);
-
-            var meshRenderer = go.AddComponent<MeshRenderer>();
-            meshRenderer.Material = _matBasicLit;
-            meshRenderer.Overrides.MainTexture = texture;
-            _scene.Add(go);
-
-
-            // Add box collider (1x1x1 cube)
-            var collider = go.AddComponent<SphereCollider>();
-            collider.Diameter = scale.Length();
-
-            // Add rigidbody (Dynamic so it falls)
-            var rigidBody = go.AddComponent<RigidBody>();
-            rigidBody.BodyType = BodyType.Dynamic;
-            rigidBody.Mass = 1.0f;
-        }
-
-        private void DemoStuff()
-        {
-            _newKBState = Keyboard.GetState();
-            DemoEventPublish();
-            DemoCameraSwitch();
-            DemoToggleFullscreen();
-            DemoAudioSystem();
-            DemoOrchestrationSystem();
-            _oldKBState = _newKBState;
-        }
-
-        private void DemoOrchestrationSystem()
-        {
-            var orchestrator = _scene.GetSystem<OrchestrationSystem>().Orchestrator;
-
-            bool isPressed = _newKBState.IsKeyDown(Keys.O) && !_oldKBState.IsKeyDown(Keys.O);
-            if (isPressed)
-            {  
-                orchestrator.Build("my first sequence")
-                    .WaitSeconds(2)
-                    .Publish(new CameraChangeEvent(AppData.CAMERA_NAME_FIRST_PERSON))
-                    .WaitSeconds(2)
-                    .Publish(new PlaySfxEvent("SFX_UI_Click_Designed_Pop_Generic_1", 1, false, null))
-                    .Register();
-
-                orchestrator.Start("my first sequence", _scene, EngineContext.Instance);
-            }
-
-            bool isIPressed = _newKBState.IsKeyDown(Keys.I) && !_oldKBState.IsKeyDown(Keys.I);
-            if (isIPressed)
-                orchestrator.Pause("my first sequence");
-
-            bool isPPressed = _newKBState.IsKeyDown(Keys.P) && !_oldKBState.IsKeyDown(Keys.P);
-            if (isPPressed)
-                orchestrator.Resume("my first sequence");
-        }
-
-        private void DemoAudioSystem()
-        {
-            var events = EngineContext.Instance.Events;
-
-            //TODO - Exercise
-            bool isD3Pressed = _newKBState.IsKeyDown(Keys.D3) && !_oldKBState.IsKeyDown(Keys.D3);
-            if (isD3Pressed)
-            {
-                events.Publish(new PlaySfxEvent("SFX_UI_Click_Designed_Pop_Generic_1",
-                    1, false, null));
-            }
-
-            bool isD4Pressed = _newKBState.IsKeyDown(Keys.D4) && !_oldKBState.IsKeyDown(Keys.D4);
-            if (isD4Pressed)
-            {
-                events.Publish(new PlayMusicEvent("secret_door", 1, 8));
-            }
-
-            bool isD5Pressed = _newKBState.IsKeyDown(Keys.D5) && !_oldKBState.IsKeyDown(Keys.D5);
-            if (isD5Pressed)
-            {
-                events.Publish(new StopMusicEvent(4));
-            }
-
-            bool isD6Pressed = _newKBState.IsKeyDown(Keys.D6) && !_oldKBState.IsKeyDown(Keys.D6);
-            if (isD6Pressed)
-            {
-                events.Publish(new FadeChannelEvent(AudioMixer.AudioChannel.Master,
-                    0.1f, 4));
-            }
-
-            bool isD7Pressed = _newKBState.IsKeyDown(Keys.D7) && !_oldKBState.IsKeyDown(Keys.D7);
-            if (isD7Pressed)
-            {
-                //expensive and crude => move to Component::Start()
-                var go = _scene.Find(go => go.Name.Equals(AppData.PLAYER_NAME));
-                Transform emitterTransform = go.Transform;
-
-                events.Publish(new PlaySfxEvent("hand_gun1",
-                    1, true, emitterTransform));
-            }
-        }
-
-        private void DemoToggleFullscreen()
-        {
-            bool togglePressed = _newKBState.IsKeyDown(Keys.F5) && !_oldKBState.IsKeyDown(Keys.F5);
-            if (togglePressed)
-                _graphics.ToggleFullScreen();
-        }
-
-        private void DemoCameraSwitch()
-        {
-            var events = EngineContext.Instance.Events;
-
-            bool isFirst = _newKBState.IsKeyDown(Keys.D1) && !_oldKBState.IsKeyDown(Keys.D1);
-            if (isFirst)
-            {
-                events.Post(new CameraChangeEvent(AppData.CAMERA_NAME_FIRST_PERSON));
-                events.Publish(new PlaySfxEvent("SFX_UI_Click_Designed_Pop_Generic_1",
-                  1, false, null));
-            }
-
-            bool isThird = _newKBState.IsKeyDown(Keys.D2) && !_oldKBState.IsKeyDown(Keys.D2);
-            if (isThird)
-            {
-                events.Post(new CameraChangeEvent(AppData.CAMERA_NAME_THIRD_PERSON));
-                events.Publish(new PlaySfxEvent("SFX_UI_Click_Designed_Pop_Mallet_Open_1",
-                1, false, null));
-            }
-        }
-
-        private void DemoEventPublish()
-        {
-            // F2: publish a test DamageEvent
-            if (_newKBState.IsKeyDown(Keys.F6) && !_oldKBState.IsKeyDown(Keys.F6))
-            {
-                // Simple “debug” damage example
-                var hitPos = new Vector3(0, 5, 0); //some fake position
-                _damageAmount++;
-
-                var damageEvent = new DamageEvent(_damageAmount, DamageEvent.DamageType.Strength,
-                    "Plasma rifle", AppData.PLAYER_NAME, hitPos, false);
-
-                EngineContext.Instance.Events.Post(damageEvent);
-            }
-
-            // Raise inventory event
-            if (_newKBState.IsKeyDown(Keys.E) && !_oldKBState.IsKeyDown(Keys.E))
-            {
-                var inventoryEvent = new InventoryEvent();
-                inventoryEvent.ItemType = ItemType.Weapon;
-                inventoryEvent.Value = 10;
-                EngineContext.Instance.Events.Publish(inventoryEvent);
-            }
-
-            if (_newKBState.IsKeyDown(Keys.L) && !_oldKBState.IsKeyDown(Keys.L))
-            {
-                var inventoryEvent = new InventoryEvent();
-                inventoryEvent.ItemType = ItemType.Lore;
-                inventoryEvent.Value = 0;
-                EngineContext.Instance.Events.Publish(inventoryEvent);
-            }
-        }
-
-        private void DemoLoadFromJSON()
-        {
-            var relativeFilePathAndName = "assets/data/single_model_spawn.json";
-            List<ModelSpawnData> mList = JSONSerializationUtility.LoadData<ModelSpawnData>(Content, relativeFilePathAndName);
-
-            //load a single model
-            foreach (var d in mList)
-                InitializeModel(d.Position, d.RotationDegrees, d.Scale, d.TextureName, d.ModelName, d.ObjectName);
-
-            relativeFilePathAndName = "assets/data/multi_model_spawn.json";
-            //load multiple models
-            foreach (var d in JSONSerializationUtility.LoadData<ModelSpawnData>(Content, relativeFilePathAndName))
-                InitializeModel(d.Position, d.RotationDegrees, d.Scale, d.TextureName, d.ModelName, d.ObjectName);
-        }
-
-        private void DemoCollidablePrimitive(Vector3 position, Vector3 scale, Vector3 rotateDegrees)
-        {
-            GameObject gameObject = null;
-            MeshFilter meshFilter = null;
-            MeshRenderer meshRenderer = null;
-
-            gameObject = new GameObject("test crate textured cube");
-            gameObject.Transform.TranslateTo(position);
-            gameObject.Transform.ScaleTo(scale * 0.5f);  
-            gameObject.Transform.RotateEulerBy(rotateDegrees * MathHelper.Pi / 180f);
-
-
-            meshFilter = MeshFilterFactory.CreateCubeTexturedLit(_graphics.GraphicsDevice);
-            gameObject.AddComponent(meshFilter);
-
-            meshRenderer = gameObject.AddComponent<MeshRenderer>();
-            meshRenderer.Material = _matBasicLit; //enable lighting for the crate
-            meshRenderer.Overrides.MainTexture = _textureDictionary.Get("crate1");
-
-            var collider = gameObject.AddComponent<BoxCollider>();
-            collider.Size = scale;  // Collider is FULL size
-            collider.Center = Vector3.Zero;
-
-            var rb = gameObject.AddComponent<RigidBody>();
-            rb.Mass = 1.0f;
-            rb.BodyType = BodyType.Dynamic;
-
-            _scene.Add(gameObject);
-        }
-
-        private void DemoAlphaCutoutFoliage(Vector3 position, float width, float height)
-        {
-            var go = new GameObject("tree");
-
-            // A unit quad facing +Z (the factory already supplies lit quad with UVs)
-            var mf = MeshFilterFactory.CreateQuadTexturedLit(GraphicsDevice);
-            go.AddComponent(mf);
-
-            var treeRenderer = go.AddComponent<MeshRenderer>();
-            treeRenderer.Material = _matAlphaCutout;
-
-            // Per-object properties via the overrides block
-            treeRenderer.Overrides.MainTexture = _textureDictionary.Get("tree4");
-
-            // AlphaTest: pixels with alpha below ReferenceAlpha are discarded (0–255).
-            // 128–160 is a good starting range for foliage; tweak to taste.
-            treeRenderer.Overrides.SetInt("ReferenceAlpha", 128);
-            treeRenderer.Overrides.Alpha = 1f; // overall alpha multiplier (kept at 1 for cutout)
-
-            // Scale the quad so it looks like a tree (aspect from the PNG)
-            go.Transform.ScaleTo(new Vector3(width, height, 1f));
-
-            go.Transform.TranslateTo(position);
-
-            _scene.Add(go);
-        }
-
-        /// <summary>
-        /// Subscribes a simple debug listener for physics collision events.
-        /// </summary>
-        private void InitializeCollisionEventListener()
-        {
-            var events = EngineContext.Instance.Events;
-
-            // Lowest friction: just subscribe with default priority & no filter
-            _collisionSubscription = events.Subscribe<CollisionEvent>(OnCollisionEvent);
-        }
-
-        /// <summary>
-        /// Very simple collision debug handler.
-        /// Adjust field names to match your CollisionEvent struct.
-        /// </summary>
-        private void OnCollisionEvent(CollisionEvent evt)
-        {
-            // Early-out if this collision does not involve any layer we care about.
-            if (!evt.Matches(_collisionDebugMask))
-                return;
-
-            var bodyA = evt.BodyA;
-            var bodyB = evt.BodyB;
-
-            var nameA = bodyA?.GameObject?.Name ?? "<null>";
-            var nameB = bodyB?.GameObject?.Name ?? "<null>";
-
-            var layerA = evt.LayerA;
-            var layerB = evt.LayerB;
-
-            System.Diagnostics.Debug.WriteLine(
-                $"[Collision] {nameA} (Layer {layerA}) <-> {nameB} (Layer {layerB})");
-        }
-
-
-        #endregion
     }
 }
