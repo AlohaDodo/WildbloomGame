@@ -112,9 +112,13 @@
       "name": "explosion1",
       "contentPath": "assets/sounds/Explosion 1"
     },
-    {
+    { //Village Bgm
       "name": "BGM-Village",
       "contentPath": "assets/sounds/BGM-Village"
+    },
+    {//WalkingVfx
+      "Name": "Walking",
+      "ContentPath": "Assets/Sounds/WalkingGrass"
     },
     {
       "name": "hand_gun1",
