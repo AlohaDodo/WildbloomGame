@@ -1,4 +1,6 @@
-﻿using GDEngine.Core.Timing;
+﻿using GDEngine.Core.Audio.Events;
+using GDEngine.Core.Services;
+using GDEngine.Core.Timing;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
@@ -13,6 +15,9 @@ namespace GDEngine.Core.Components
     public sealed class KeyboardWASDController : Component
     {
         #region Fields
+        private float _footstepInterval = 0.35f; // time between steps
+        private float _footstepTimer = 0f;
+
         private float _moveSpeed = 15f;        // base units/second
         private float _boostMultiplier = 4f;
 
@@ -93,6 +98,28 @@ namespace GDEngine.Core.Components
 
             if (dir.LengthSquared() != 0)
                 Move(dir, speed);
+
+            // Walking SFX 
+            if (dir.LengthSquared() != 0)
+            {
+                _footstepTimer += deltaTime;
+
+                if (_footstepTimer >= _footstepInterval)
+                {
+                    _footstepTimer = 0f;
+
+                    // Play footstep sound
+                    EngineContext.Instance.Events.Publish(
+                        new PlaySfxEvent("WalkingGrass", 20.0f) // change 0.5f for volume
+                    );
+                }
+            }
+            else
+            {
+                // Reset timer when not moving
+                _footstepTimer = 0f;
+            }
+
         }
 
         #endregion

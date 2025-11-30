@@ -216,6 +216,12 @@
 /processorParam:Quality=Best
 /build:Assets/Sounds/Laser Gun Salve.wav
 
+#begin Assets/Sounds/PlayerSFX/WalkingGrass.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Assets/Sounds/PlayerSFX/WalkingGrass.wav;Assets/Sounds/PlayerSFX/WalkingGrass
+
 #begin Assets/Sounds/Secret door.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor

@@ -197,6 +197,7 @@ namespace GDGame
                     _soundDictionary.LoadFromManifest(m.Sounds, e => e.Name, e => e.ContentPath, overwrite: true);
                     _effectsDictionary.LoadFromManifest(m.Effects, e => e.Name, e => e.ContentPath, overwrite: true);
                     //TODO - Add dictionary loading for other assets - song, other?
+                  
                 }
             }
         }
@@ -270,9 +271,8 @@ namespace GDGame
             InitializeAudioSystem();
 
             // Play BGM immediately when game starts
-            EngineContext.Instance.Events.Publish(new PlayMusicEvent("BGM-Village", 0.7f, 1.5f)
-);
-
+            EngineContext.Instance.Events.Publish(new PlayMusicEvent("BGM-Village", 0f, 1.5f));
+            EngineContext.Instance.Events.Publish(new PlaySfxEvent("footstep", 3f));
         }
 
 

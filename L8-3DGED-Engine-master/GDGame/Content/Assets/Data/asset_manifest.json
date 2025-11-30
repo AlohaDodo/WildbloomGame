@@ -118,7 +118,7 @@
     },
     {//WalkingVfx
       "Name": "Walking",
-      "ContentPath": "Assets/Sounds/WalkingGrass"
+      "ContentPath": "assets/Sounds/PlayerSFX/WalkingGrass"
     },
     {
       "name": "hand_gun1",
