@@ -18,6 +18,7 @@ using GDEngine.Core.Rendering;
 using GDEngine.Core.Rendering.Base;
 using GDEngine.Core.Rendering.UI;
 using GDEngine.Core.Rendering.UI.Info;
+using GDEngine.Core.Screen;
 using GDEngine.Core.Serialization;
 using GDEngine.Core.Services;
 using GDEngine.Core.Systems;
@@ -69,7 +70,7 @@ namespace GDGame
             Window.Title = "Wildbloom";
 
             // Set resolution and centering (by monitor index)
-            InitializeGraphics(ScreenResolution.R_HD_16_9_1280x720);
+            InitializeGraphics(GDEngine.Core.ScreenResolution.R_HD_16_9_1280x720);
 
             // Center and hide the mouse!
             InitializeMouse();
@@ -148,11 +149,8 @@ namespace GDGame
             // Setup renderers after all game objects added since ui text may use a gameobject as target
             InitializeUI();
 
-            
             // Setup menu
             InitializeMenuManager();
-
-              
 
             //set the active scene
             _sceneManager.SetActiveScene(_scene.Name);
@@ -183,20 +181,18 @@ namespace GDGame
             });
         }
 
-        private void HandlePointEntered()
-        {
-            //play sound
-            //raise/publish event
-            //orchestration
-            //reset the player
-            //consume the cola ++ health
-            System.Diagnostics.Debug.WriteLine("HandlePointEntered");
-        }
-
         private void InitializeSceneManager()
         {
             _sceneManager = new SceneManager(this);
             Components.Add(_sceneManager);
+        }
+
+        private void InitializeCameraManagers()
+        {
+            //inside scene
+            var go = new GameObject("Camera Manager");
+            go.AddComponent<CameraEventListener>();
+            _sceneManager.ActiveScene.Add(go);
         }
 
         private void InitializeMenuManager()
@@ -257,7 +253,7 @@ namespace GDGame
             System.Windows.Forms.Application.SetHighDpiMode(System.Windows.Forms.HighDpiMode.PerMonitorV2);
 
             // Set preferred resolution
-            ScreenResolution.SetResolution(_graphics, resolution);
+            GDEngine.Core.ScreenResolution.SetResolution(_graphics, resolution);
 
             // Center on primary display (set to index of the preferred monitor)
             WindowUtility.CenterOnMonitor(this, 1);
@@ -373,17 +369,69 @@ namespace GDGame
         private void InitializeSystems()
         {
             InitializePhysicsSystem();
-            InitializePhysicsDebugSystem(true);
-            InitializeEventSystem();  //propagate events
+            InitializePhysicsDebugSystem(false);
+            InitializeEventSystem();  //propagate events  
             InitializeInputSystem();  //input
             InitializeCameraAndRenderSystems(); //update cameras, draw renderable game objects, draw ui and menu
             InitializeAudioSystem();
+            InitializeOrchestrationSystem(false); //show debugger
+            InitializeImpulseSystem();    //camera shake, audio duck volumes etc   
+            InitializeGameStateSystem();   //manage and track game state
+                                           //  InitializeNavMeshSystem();
 
             // Play BGM immediately when game starts
             EngineContext.Instance.Events.Publish(new PlayMusicEvent("BGM-Village", 0.7f, 1.5f));
 
         }
 
+        private void InitializeGameStateSystem()
+        {
+            // Add game state system
+            _sceneManager.ActiveScene.AddSystem(new GameStateSystem());
+        }
+
+        private void InitializeImpulseSystem()
+        {
+            _sceneManager.ActiveScene.Add(new ImpulseSystem(EngineContext.Instance.Impulses));
+        }
+
+        private void InitializeOrchestrationSystem(bool debugEnabled)
+        {
+            var orchestrationSystem = new OrchestrationSystem();
+            orchestrationSystem.Configure(options =>
+            {
+                options.Time = Orchestrator.OrchestrationTime.Unscaled;
+                options.LocalScale = 1;
+                options.Paused = false;
+            });
+            _sceneManager.ActiveScene.Add(orchestrationSystem);
+
+            // Debugger
+            if (debugEnabled)
+            {
+                GameObject debugGO = new GameObject("Perf Stats");
+                var debugRenderer = debugGO.AddComponent<UIDebugInfo>();
+
+                debugRenderer.Font = _fontDictionary.Get("perf_stats_font");
+                debugRenderer.ScreenCorner = ScreenCorner.TopLeft;
+                debugRenderer.Margin = new Vector2(10f, 10f);
+
+                // Register orchestration as a debug provider
+                if (orchestrationSystem != null)
+                    debugRenderer.Providers.Add(orchestrationSystem);
+
+                var perfProvider = new PerformanceDebugInfoProvider
+                {
+                    Profile = DisplayProfile.Profiling,
+                    ShowMemoryStats = true
+                };
+
+                debugRenderer.Providers.Add(perfProvider);
+
+                _sceneManager.ActiveScene.Add(debugGO);
+            }
+
+        }
 
 
         private void InitializeAudioSystem()
