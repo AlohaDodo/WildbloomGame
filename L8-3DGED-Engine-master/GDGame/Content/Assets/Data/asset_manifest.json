@@ -65,16 +65,16 @@
             "contentPath": "assets/textures/ui/icons/base/white_1x1"
         },
         {
-            "name": "mainmenu_monkey",
-            "contentPath": "assets/textures/ui/backgrounds/mainmenu_monkey"
+            "name": "mainMenuWildBloom",
+            "contentPath": "assets/textures/ui/backgrounds/mainMenuWildBloom"
         },
         {
             "name": "audio_background",
-            "contentPath": "assets/textures/ui/backgrounds/controlsmenu"
+            "contentPath": "assets/textures/ui/backgrounds/mainMenuWildBloom"
         },
         {
-            "name": "controlsmenu_monkey",
-            "contentPath": "assets/textures/ui/backgrounds/controlsmenu_monkey"
+            "name": "controlsmenu",
+            "contentPath": "assets/textures/ui/backgrounds/mainMenuWildBloom"
         },
         ///UI - SLIDER
         {

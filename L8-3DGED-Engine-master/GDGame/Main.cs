@@ -94,6 +94,9 @@ namespace GDGame
             // Camera, UI, Menu, Physics, Rendering etc.
             InitializeSystems();
 
+            // Camera event listener to handle camera events
+            InitializeCameraManagers();
+
             // All cameras we want in the game are loaded now and one set as active
             InitializeCameras();
 
@@ -209,9 +212,9 @@ namespace GDGame
             // Wire UIManager to the menu scene
             _menuManager.Initialize(_sceneManager.ActiveScene,
                 btnTex, trackTex, handleTex, controlsTx, uiFont,
-                _textureDictionary.Get("mainmenu_monkey"),
-                 _textureDictionary.Get("controlsmenu_monkey"),
-                  _textureDictionary.Get("controlsmenu_monkey"));
+                _textureDictionary.Get("mainMenuWildBloom"),
+                 _textureDictionary.Get("controlsmenu"),
+                  _textureDictionary.Get("controlsmenu"));
 
             // Subscribe to high-level events
             _menuManager.PlayRequested += () =>
@@ -436,7 +439,7 @@ namespace GDGame
 
         private void InitializeAudioSystem()
         {
-            _scene.Add(new AudioSystem(_soundDictionary));
+            _sceneManager.ActiveScene.Add(new AudioSystem(_soundDictionary));
         }
 
         private void InitializePhysicsDebugSystem(bool isEnabled)
@@ -463,19 +466,19 @@ namespace GDGame
 
         private void InitializeEventSystem()
         {
-            _scene.Add(new EventSystem(EngineContext.Instance.Events));
+            _sceneManager.ActiveScene.Add(new EventSystem(EngineContext.Instance.Events));
         }
 
         private void InitializeCameraAndRenderSystems()
         {
             var cameraSystem = new CameraSystem(_graphics.GraphicsDevice, -100);
-            _scene.Add(cameraSystem);
+            _sceneManager.ActiveScene.Add(cameraSystem);
 
             var renderSystem = new RenderSystem(-100);
-            _scene.Add(renderSystem);
+            _sceneManager.ActiveScene.Add(renderSystem);
 
-            var uiRenderSystem = new UIRenderSystem(100);
-            _scene.Add(uiRenderSystem); // draws in PostRender after RenderingSystem (order = -100)
+            var uiRenderSystem = new UIRenderSystem(-100);
+            _sceneManager.ActiveScene.Add(uiRenderSystem); // draws in PostRender after RenderingSystem (order = -100)
         }
 
         private void InitializeInputSystem()
@@ -496,7 +499,7 @@ namespace GDGame
             inputSystem.Add(new GDMouseInput(bindings));
             inputSystem.Add(new GDGamepadInput(PlayerIndex.One, "Gamepad P1"));
 
-            _scene.Add(inputSystem);
+            _sceneManager.ActiveScene.Add(inputSystem);
         }
 
         private void InitializeCameras()
@@ -711,30 +714,17 @@ namespace GDGame
             IsMouseVisible = false;
         }
 
-        
+
         protected override void Update(GameTime gameTime)
         {
-            //call time update
-            #region Core
             Time.Update(gameTime);
-
-            //update Scene
-            _scene.Update(Time.DeltaTimeSecs);
-            #endregion
-
-            
-
-            base.Update(gameTime);
+            base.Update(gameTime); // SceneManager updates scenes internally
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.CornflowerBlue);
-
-            //just as called update, we now have to call draw to call the draw in the renderingsystem
-            _scene.Draw(Time.DeltaTimeSecs);
-
-            base.Draw(gameTime);
+            GraphicsDevice.Clear(Color.CornflowerBlue);
+            base.Draw(gameTime); // SceneManager handles rendering
         }
 
         /// <summary>
