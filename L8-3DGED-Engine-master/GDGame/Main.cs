@@ -363,6 +363,7 @@ namespace GDGame
             _scene = new Scene(EngineContext.Instance, "outdoors - level 1");
 
             // Add each new scene into the manager
+            _sceneManager.AddScene("outdoors - level 1", _scene);
             _sceneManager.AddScene("AppData", _scene);
 
             // Set the active scene before anything that uses ActiveScene
@@ -444,8 +445,8 @@ namespace GDGame
 
             //register all the devices
             inputSystem.Add(new GDKeyboardInput(bindings));
-            //inputSystem.Add(new GDMouseInput(bindings));
-            //inputSystem.Add(new GDGamepadInput(PlayerIndex.One, "Gamepad P1"));
+            inputSystem.Add(new GDMouseInput(bindings));
+            inputSystem.Add(new GDGamepadInput(PlayerIndex.One, "Gamepad P1"));
 
             _scene.Add(inputSystem);
         }
@@ -572,45 +573,45 @@ namespace GDGame
 
         }
 
-        private GameObject InitializeModel(Vector3 position,
-            Vector3 eulerRotationDegrees, Vector3 scale,
-            string textureName, string modelName, string objectName)
-        {
-            GameObject gameObject = null;
+        //private GameObject InitializeModel(Vector3 position,
+        //    Vector3 eulerRotationDegrees, Vector3 scale,
+        //    string textureName, string modelName, string objectName)
+        //{
+        //    GameObject gameObject = null;
 
-            gameObject = new GameObject(objectName);
-            gameObject.Transform.TranslateTo(position);
-            gameObject.Transform.RotateEulerBy(eulerRotationDegrees * MathHelper.Pi / 180f);
-            gameObject.Transform.ScaleTo(scale);
+        //    gameObject = new GameObject(objectName);
+        //    gameObject.Transform.TranslateTo(position);
+        //    gameObject.Transform.RotateEulerBy(eulerRotationDegrees * MathHelper.Pi / 180f);
+        //    gameObject.Transform.ScaleTo(scale);
 
-            var model = _modelDictionary.Get(modelName);
-            var texture = _textureDictionary.Get(textureName);
-            var meshFilter = MeshFilterFactory.CreateFromModel(model, _graphics.GraphicsDevice, 0, 0);
-            gameObject.AddComponent(meshFilter);
+        //    var model = _modelDictionary.Get(modelName);
+        //    var texture = _textureDictionary.Get(textureName);
+        //    var meshFilter = MeshFilterFactory.CreateFromModel(model, _graphics.GraphicsDevice, 0, 0);
+        //    gameObject.AddComponent(meshFilter);
 
-            var meshRenderer = gameObject.AddComponent<MeshRenderer>();
+        //    var meshRenderer = gameObject.AddComponent<MeshRenderer>();
 
-            meshRenderer.Material = _matBasicLit;
-            meshRenderer.Overrides.MainTexture = texture;
+        //    meshRenderer.Material = _matBasicLit;
+        //    meshRenderer.Overrides.MainTexture = texture;
 
-            _scene.Add(gameObject);
+        //    _scene.Add(gameObject);
 
-            return gameObject;
-        }
+        //    return gameObject;
+        //}
 
         private void DemoLoadFromJSON()
         {
             var relativeFilePathAndName = "assets/data/single_model_spawn.json";
             List<ModelSpawnData> mList = JSONSerializationUtility.LoadData<ModelSpawnData>(Content, relativeFilePathAndName);
 
-            //load a single model
-            foreach (var d in mList)
-                InitializeModel(d.Position, d.RotationDegrees, d.Scale, d.TextureName, d.ModelName, d.ObjectName);
+            ////load a single model
+            //foreach (var d in mList)
+            //    InitializeModel(d.Position, d.RotationDegrees, d.Scale, d.TextureName, d.ModelName, d.ObjectName);
 
-            relativeFilePathAndName = "assets/data/multi_model_spawn.json";
-            //load multiple models
-            foreach (var d in JSONSerializationUtility.LoadData<ModelSpawnData>(Content, relativeFilePathAndName))
-                InitializeModel(d.Position, d.RotationDegrees, d.Scale, d.TextureName, d.ModelName, d.ObjectName);
+            //relativeFilePathAndName = "assets/data/multi_model_spawn.json";
+            ////load multiple models
+            //foreach (var d in JSONSerializationUtility.LoadData<ModelSpawnData>(Content, relativeFilePathAndName))
+            //    InitializeModel(d.Position, d.RotationDegrees, d.Scale, d.TextureName, d.ModelName, d.ObjectName);
         }
 
         private void InitializeUI()
