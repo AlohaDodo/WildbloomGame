@@ -281,16 +281,10 @@ namespace GDEngine.Core.Managers
                 OnPlayClicked);
 
             _audioButton = _mainMenuPanel.AddButton(
-                "Audio",
+                "Settings",
                 _buttonTexture!,
                 _font!,
                 OnAudioClicked);
-
-            _controlsButton = _mainMenuPanel.AddButton(
-                "Controls",
-                _buttonTexture!,
-                _font!,
-                OnControlsClicked);
 
             _exitButton = _mainMenuPanel.AddButton(
         "Exit",
