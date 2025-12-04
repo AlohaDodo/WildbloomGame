@@ -138,12 +138,28 @@
             "contentPath": "assets/models/teapot"
         },
         {
-            "name": "teapot_lowpoly",
-            "contentPath": "assets/models/teapot_lowpoly"
+            "name": "house1",
+            "contentPath": "assets/models/environment/house1"
         },
         {
-            "name": "plane",
-            "contentPath": "assets/models/plane"
+            "name": "house3",
+            "contentPath": "assets/models/environment/house3"
+        },
+        {
+            "name": "tree",
+            "contentPath": "assets/models/environment/tree"
+        },
+        {
+            "name": "fence_end",
+            "contentPath": "assets/models/environment/fence_end"
+        },
+        {
+            "name": "half_fence",
+            "contentPath": "assets/models/environment/half_fence"
+        },
+        {
+            "name": "path",
+            "contentPath": "assets/models/environment/path"
         }
     ],
     "sounds": [
