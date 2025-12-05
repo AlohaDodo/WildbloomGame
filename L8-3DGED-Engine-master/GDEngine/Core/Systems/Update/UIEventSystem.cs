@@ -3,6 +3,7 @@ using GDEngine.Core.Entities;
 using GDEngine.Core.Enums;
 using GDEngine.Core.Events;
 using GDEngine.Core.Rendering.UI;
+using GDEngine.Core.Systems.Base;
 using GDEngine.Core.Timing;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -49,7 +50,7 @@ namespace GDEngine.Core.Systems
             {
                 return _pointerPosition;
             }
-        } 
+        }
         #endregion
 
 
@@ -203,10 +204,10 @@ namespace GDEngine.Core.Systems
 
         public override void Update(float deltaTime)
         {
-           // System.Diagnostics.Debug.WriteLine($"UIEventSystem::Update at {Time.RealtimeSinceStartupSecs}");
+            // System.Diagnostics.Debug.WriteLine($"UIEventSystem::Update at {Time.RealtimeSinceStartupSecs}");
 
-          //  if (_needsRebuildActiveList)
-                RebuildActiveList();
+            //  if (_needsRebuildActiveList)
+            RebuildActiveList();
 
             _previousMouseState = _currentMouseState;
             _currentMouseState = Mouse.GetState();

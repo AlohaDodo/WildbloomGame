@@ -129,7 +129,7 @@ namespace GDEngine.Core.Screen
         /// <summary>
         /// Sets the preferred backbuffer size from width/height integers and calls ApplyChanges().
         /// </summary>
-        public static void SetResolution(GraphicsDeviceManager graphicsDeviceManager, 
+        public static void SetResolution(GraphicsDeviceManager graphicsDeviceManager,
             int width, int height)
         {
             graphicsDeviceManager.PreferredBackBufferWidth = Math.Max(1, width);

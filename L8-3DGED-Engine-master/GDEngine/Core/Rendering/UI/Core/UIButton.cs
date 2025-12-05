@@ -1,5 +1,6 @@
+﻿using Microsoft.Xna.Framework;
 using GDEngine.Core.Events;
-using Microsoft.Xna.Framework;
+using System.Drawing;
 
 namespace GDEngine.Core.Rendering.UI
 {
@@ -115,6 +116,8 @@ namespace GDEngine.Core.Rendering.UI
             if (!Interactable)
                 return;
 
+            //Buttons not working debug log
+            System.Diagnostics.Debug.WriteLine("UIButton PRESS fired");
             _onClick?.Invoke();
         }
 
