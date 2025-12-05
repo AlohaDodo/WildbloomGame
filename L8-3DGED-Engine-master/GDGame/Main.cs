@@ -8,7 +8,6 @@ using GDEngine.Core.Debug;
 using GDEngine.Core.Entities;
 using GDEngine.Core.Events;
 using GDEngine.Core.Factories;
-
 using GDEngine.Core.Input.Data;
 using GDEngine.Core.Input.Devices;
 using GDEngine.Core.Managers;
@@ -16,7 +15,6 @@ using GDEngine.Core.Orchestration;
 using GDEngine.Core.Rendering;
 using GDEngine.Core.Rendering.Base;
 using GDEngine.Core.Rendering.UI;
-using GDEngine.Core.Rendering.UI.Info;
 using GDEngine.Core.Screen;
 using GDEngine.Core.Serialization;
 using GDEngine.Core.Services;
@@ -94,9 +92,14 @@ namespace GDGame
             _sceneManager.AddScene(_scene.Name, _scene);
             _sceneManager.SetActiveScene(_scene.Name);
 
+            //Initialize camera managers
+            _sceneManager.SetActiveScene(_scene.Name);
 
             // Camera event listener to handle camera events
             InitializeCameraManagers();
+
+            //InitializeSystems before adding any game objects
+            InitializeSystems();
 
             // All cameras we want in the game are loaded now and one set as active
             InitializeCameras();
@@ -361,11 +364,8 @@ namespace GDGame
 
         private void InitializeScene()
         {
+            //The level
             _scene = new Scene(EngineContext.Instance, "outdoors - level 1");
-
-            _sceneManager.AddScene(_scene.Name, _scene);
-
-            _sceneManager.SetActiveScene(_scene.Name);
         }
 
         private void InitializeSystems()
