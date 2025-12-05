@@ -696,7 +696,8 @@ namespace GDGame
             var bgGO = new GameObject("SubtitleBackground");
             var bgSprite = bgGO.AddComponent<UISprite>();
 
-            bgSprite.Texture = _textureDictionary.Get("crate1");
+            bgSprite.Texture = _textureDictionary.Get("SubtitleTextBox");
+
             bgSprite.Size = new Vector2(800, 120);
 
             bgSprite.Position = new Vector2(

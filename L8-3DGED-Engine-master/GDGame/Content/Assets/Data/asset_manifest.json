@@ -75,10 +75,16 @@
             "name": "checkerboard",
             "contentPath": "assets/textures/demo/checkerboard"
         },
-        {
-            "name": "mona lisa",
-            "contentPath": "assets/textures/demo/mona lisa"
+         {
+        "name": "mona lisa",
+        "contentPath": "assets/textures/demo/mona lisa"
         },
+
+      {
+        "name": "SubtitleTextBox",
+        "contentPath": "assets/textures/ui/backgrounds/SubtitleTextBox"
+
+      },
         //UI - BACKGROUND
         {
             "name": "white_1x1",
